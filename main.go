@@ -27,6 +27,5 @@ func work() {
 	for {
 		time.Sleep(60 * time.Second)
 		fmt.Println("Yo")
-
 	}
 }
