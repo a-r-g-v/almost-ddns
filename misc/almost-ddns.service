@@ -1,0 +1,11 @@
+[Unit]
+Description=Almost-DDNS
+After=syslog.target network.target
+
+
+[Service]
+#ExecStart=almost-ddns
+
+[Install]
+WantedBy=multi-user.target
+
