@@ -3,23 +3,25 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/zenazn/goji"
-	"net"
-
 	"github.com/bluele/slack"
 	"github.com/goji/httpauth"
+	"github.com/zenazn/goji"
+	"net"
 
 	"github.com/BurntSushi/toml"
 	"github.com/ccding/go-stun/stun"
 	_ "github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
+	"os"
 	"os/exec"
+	"path"
 	"time"
 )
 
 type tomlConfig struct {
 	Slack  slackConfig
 	Server serverConfig
+	Web    webConfig
 }
 
 type slackConfig struct {
@@ -32,28 +34,40 @@ type serverConfig struct {
 	NameServer   string
 }
 
+type webConfig struct {
+	User string
+	Pass string
+	Bind string
+}
+
 type serverStatus struct {
 	SameCount  int64
 	CheckCount int64
 }
 
+var status serverStatus
+var config tomlConfig
+
 func main() {
 
-	flag.Set("bind", ":9090")
+	// move binary directory
+	dir := path.Dir(os.Args[0])
+	os.Chdir(dir)
+
+	// load config
+	if _, err := toml.DecodeFile("config.toml", &config); err != nil {
+		panic(err)
+	}
+
+	flag.Set("bind", config.Web.Bind)
 	go work()
-	goji.Use(httpauth.SimpleBasicAuth("a", "a"))
+	goji.Use(httpauth.SimpleBasicAuth(config.Web.User, config.Web.Pass))
 	goji.Get("/v1/stat", StatAPIContoller)
 	goji.Serve()
 
 }
 
-var status serverStatus
-
 func work() {
-	var config tomlConfig
-	if _, err := toml.DecodeFile("config.toml", &config); err != nil {
-		panic(err)
-	}
 
 	targetDomain := config.Server.TargetDomain
 	nameServer := config.Server.NameServer

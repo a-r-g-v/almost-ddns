@@ -6,3 +6,8 @@ token = "SlackAPI"
 targetDomain = "srv001.arg.vc"
 nameServer = "ns.arg.vc"
 
+[web]
+user = "a"
+pass = "a"
+bind = ":9090"
+
