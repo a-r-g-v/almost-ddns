@@ -14,5 +14,5 @@ func LogAPIContoller(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "work")
 }
 func StatAPIContoller(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "work")
+	fmt.Fprintf(w, "checkCount: %d, sameCount: %d", status.CheckCount-1, status.SameCount)
 }

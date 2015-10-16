@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/zenazn/goji"
 	"net"
@@ -31,15 +32,22 @@ type serverConfig struct {
 	NameServer   string
 }
 
+type serverStatus struct {
+	SameCount  int64
+	CheckCount int64
+}
+
 func main() {
 
+	flag.Set("bind", ":9090")
 	go work()
 	goji.Use(httpauth.SimpleBasicAuth("a", "a"))
-	goji.Get("/v1/log", LogAPIContoller)
 	goji.Get("/v1/stat", StatAPIContoller)
 	goji.Serve()
 
 }
+
+var status serverStatus
 
 func work() {
 	var config tomlConfig
@@ -51,8 +59,8 @@ func work() {
 	nameServer := config.Server.NameServer
 
 	// counter
-	sameCount := 0
-	checkCount := 0
+	status.SameCount = 0
+	status.CheckCount = 0
 
 	// connection slack-api
 	api := slack.New(config.Slack.Token)
@@ -62,10 +70,10 @@ func work() {
 	}
 
 	for {
-		checkCount = checkCount + 1
+		status.CheckCount = status.CheckCount + 1
 
 		// notify running?
-		if checkCount%60 == 0 {
+		if status.CheckCount%60 == 0 {
 			err = api.ChatPostMessage(channel.Id, "@takoyaki I'm running. ", nil)
 			if err != nil {
 				fmt.Println("slack api error", err)
@@ -89,13 +97,19 @@ func work() {
 			fmt.Println("stun client error", err)
 			continue
 		}
+
+		if host == nil {
+			fmt.Println("stun client error", "host == nil")
+			continue
+		}
+
 		gipaddr := net.ParseIP(host.IP())
 		fmt.Println("stun client ipaddr:", gipaddr.String())
 
 		// compare
 		if gipaddr.String() == ripaddr.String() {
 			fmt.Println("same")
-			sameCount = sameCount + 1
+			status.SameCount = status.SameCount + 1
 			continue
 		}
 
