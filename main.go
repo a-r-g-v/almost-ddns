@@ -103,6 +103,11 @@ func work() {
 			continue
 		}
 
+		if ripaddr == nil {
+			fmt.Println("resolve error:", "resolve ip == nil")
+			continue
+		}
+
 		fmt.Println("resovle ipaddr:", ripaddr.String())
 
 		// get global-ipv4-address using STUN
