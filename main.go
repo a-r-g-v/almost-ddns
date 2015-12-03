@@ -147,7 +147,7 @@ func work() {
 		}
 
 		// wait
-		time.Sleep(60 * 10 * time.Second)
+		time.Sleep(5 * 10 * time.Second)
 
 	}
 }
